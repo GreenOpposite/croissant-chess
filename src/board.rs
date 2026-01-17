@@ -22,6 +22,10 @@ pub struct Board {
 }
 
 impl Board {
+    pub fn starting_position() -> Board {
+        Self::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap()
+    }
+
     pub fn from_fen(fen: &str) -> Result<Self, ()> {
         let mut parts = fen.split(" ");
         let fen_piece_placement = parts.next().unwrap();
