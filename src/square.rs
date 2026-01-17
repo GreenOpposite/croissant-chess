@@ -1,6 +1,7 @@
 use crate::bitboard::Bitboard;
 use crate::board::BOARD_SIZE;
 use std::fmt::{Display, Formatter};
+use std::ops::{Index, IndexMut};
 
 /// Square representation with a1 = 0.
 ///
@@ -73,5 +74,19 @@ impl Display for Square {
         let rank_char = rank + 1;
 
         write!(f, "{}{}", file_char, rank_char)
+    }
+}
+
+impl<T> Index<Square> for [T] {
+    type Output = T;
+
+    fn index(&self, square: Square) -> &Self::Output {
+        self.get(square as usize).unwrap()
+    }
+}
+
+impl<T> IndexMut<Square> for [T] {
+    fn index_mut(&mut self, square: Square) -> &mut Self::Output {
+        self.get_mut(square as usize).unwrap()
     }
 }

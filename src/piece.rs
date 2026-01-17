@@ -1,5 +1,6 @@
 use crate::color::Color;
 use std::fmt::Display;
+use std::ops::{Index, IndexMut};
 
 /// Same implementation as used by [Reckless][R]
 ///
@@ -77,6 +78,20 @@ impl Display for Piece {
         };
 
         write!(f, "{}", char)
+    }
+}
+
+impl<T> Index<Piece> for [T] {
+    type Output = T;
+
+    fn index(&self, piece: Piece) -> &Self::Output {
+        self.get(piece as usize).unwrap()
+    }
+}
+
+impl<T> IndexMut<Piece> for [T] {
+    fn index_mut(&mut self, piece: Piece) -> &mut Self::Output {
+        self.get_mut(piece as usize).unwrap()
     }
 }
 

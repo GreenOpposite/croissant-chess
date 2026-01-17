@@ -1,3 +1,5 @@
+use std::ops::{Index, IndexMut};
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Default)]
 pub enum Color {
     #[default]
@@ -22,5 +24,19 @@ impl Color {
             Color::White => 'w',
             Color::Black => 'b',
         }
+    }
+}
+
+impl<T> Index<Color> for [T] {
+    type Output = T;
+
+    fn index(&self, color: Color) -> &Self::Output {
+        self.get(color as usize).unwrap()
+    }
+}
+
+impl<T> IndexMut<Color> for [T] {
+    fn index_mut(&mut self, color: Color) -> &mut Self::Output {
+        self.get_mut(color as usize).unwrap()
     }
 }

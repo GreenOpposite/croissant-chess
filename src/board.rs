@@ -92,7 +92,7 @@ impl Board {
             for file in 0..8 {
                 let square = Square::from_file_and_rank(file, rank);
 
-                let piece_char = self.pieces[square as usize].char();
+                let piece_char = self.pieces[square].char();
 
                 match piece_char {
                     Some(c) => {
@@ -140,9 +140,15 @@ impl Board {
     }
 
     pub fn add_piece(&mut self, piece: Piece, square: Square) {
-        self.piece_bitboards[piece as usize].add(square);
-        self.color_bitboards[piece.get_color() as usize].add(square);
-        self.pieces[square as usize] = piece;
+        self.piece_bitboards[piece].add(square);
+        self.color_bitboards[piece.get_color()].add(square);
+        self.pieces[square] = piece;
+    }
+
+    pub fn remove_piece(&mut self, piece: Piece, square: Square) {
+        self.piece_bitboards[piece].remove(square);
+        self.color_bitboards[piece].remove(square);
+        self.pieces[square] = Piece::None;
     }
 }
 
@@ -170,7 +176,7 @@ impl Display for Board {
 
             for file in 0..BOARD_SIZE {
                 let square = Square::from_file_and_rank(file, rank);
-                let piece = self.pieces[square as usize];
+                let piece = self.pieces[square];
                 let cell = match piece {
                     Piece::None => "   ".to_owned(),
                     _ => format!(" {} ", piece),
@@ -206,11 +212,8 @@ mod tests {
         assert!(board.is_ok());
         let board = board.unwrap();
 
-        assert_eq!(board.color_bitboards[White as usize], Bitboard(65535));
-        assert_eq!(
-            board.color_bitboards[Black as usize],
-            Bitboard(18446462598732840960)
-        );
+        assert_eq!(board.color_bitboards[White], Bitboard(65535));
+        assert_eq!(board.color_bitboards[Black], Bitboard(18446462598732840960));
 
         assert_eq!(board.half_moves, 0);
         assert_eq!(board.full_moves, 1);
