@@ -1,3 +1,6 @@
+mod bitboard;
+mod board;
+mod square;
+
 fn main() {
-    println!("Hello, world!");
 }
