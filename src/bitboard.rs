@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 use std::iter::FusedIterator;
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not, Shl, Shr};
 
-#[derive(Copy, Clone, Eq, PartialEq, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Default, Debug)]
 #[repr(transparent)]
 pub struct Bitboard(pub u64);
 
@@ -59,7 +59,7 @@ impl Display for Bitboard {
 
             for file in 0..BOARD_SIZE {
                 let square = Square::from_file_and_rank(file, rank);
-                let dark = (rank + file) % 2 == 1;
+                let dark = (rank + file) % 2 == 0;
 
                 let cell = if self.has(square) {
                     " X ".bold().black()

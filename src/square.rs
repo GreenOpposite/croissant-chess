@@ -1,8 +1,10 @@
 use crate::bitboard::Bitboard;
+use crate::board::BOARD_SIZE;
+use std::fmt::{Display, Formatter};
 
 /// Square representation with a1 = 0.
 ///
-/// Same approach as used by [Reckless][R]
+/// Same implementation as used by [Reckless][R]
 ///
 /// [R]: [https://github.com/codedeliveryservice/Reckless]
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
@@ -34,7 +36,42 @@ impl Square {
         Self::new(file | (rank << 3))
     }
 
+    /// Returns [Square::None] on invalid input
+    pub fn from_algebraic_notation(notation: &str) -> Self {
+        let b = notation.as_bytes();
+        if b.len() != 2 || b[0] < b'a' || b[0] > b'h' || b[1] < b'1' || b[1] > b'8' {
+            return Self::None;
+        }
+
+        let file = b[0] - b'a';
+        let rank = b[1] - b'1';
+        Self::from_file_and_rank(file, rank)
+    }
+
     pub fn bitboard(self) -> Bitboard {
         Bitboard(1 << self as u8)
+    }
+
+    pub fn file(&self) -> u8 {
+        *self as u8 % BOARD_SIZE
+    }
+
+    pub fn rank(&self) -> u8 {
+        *self as u8 / BOARD_SIZE
+    }
+}
+
+impl Display for Square {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if *self as u8 > 64 {
+            return Err(std::fmt::Error);
+        }
+
+        let (file, rank) = (self.file(), self.rank());
+
+        let file_char = (file + b'a') as char;
+        let rank_char = rank + 1;
+
+        write!(f, "{}{}", file_char, rank_char)
     }
 }
