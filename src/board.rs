@@ -2,6 +2,7 @@ use crate::bitboard::Bitboard;
 use crate::castling_rights::{CastlingRight, CastlingRights};
 use crate::color::Color;
 use crate::color::Color::{Black, White};
+use crate::moves::{Move, MoveType};
 use crate::piece::Piece;
 use crate::square::Square;
 use colored::Colorize;
@@ -143,6 +144,10 @@ impl Board {
         fen
     }
 
+    pub fn opponent(&self) -> Color {
+        self.current_color.other()
+    }
+
     pub fn add_piece(&mut self, piece: Piece, square: Square) {
         self.piece_bitboards[piece].add(square);
         self.color_bitboards[piece.get_color()].add(square);
@@ -150,9 +155,106 @@ impl Board {
     }
 
     pub fn remove_piece(&mut self, piece: Piece, square: Square) {
+        debug_assert!(
+            self.piece_bitboards[piece].has(square),
+            "Square {square} has no piece {piece}"
+        );
+        debug_assert!(
+            self.color_bitboards[piece.get_color()].has(square),
+            "Square {square} has no piece {piece} for color {}",
+            piece.get_color()
+        );
+
         self.piece_bitboards[piece].remove(square);
-        self.color_bitboards[piece].remove(square);
+        self.color_bitboards[piece.get_color()].remove(square);
         self.pieces[square] = Piece::None;
+    }
+
+    pub fn make_move(&mut self, mv: Move) {
+        let moving_piece = self.pieces[mv.from()];
+        debug_assert_ne!(
+            moving_piece,
+            Piece::None,
+            "No piece {moving_piece} on square {}",
+            mv.from()
+        );
+
+        // Normal moves, double pushes, captures, and promotions
+        self.remove_piece(moving_piece, mv.from());
+        let added_piece = mv.get_promotion().unwrap_or(moving_piece);
+        self.add_piece(added_piece, mv.to());
+
+        // Special cases
+        match mv.ty() {
+            MoveType::EnPassant => {
+                debug_assert_eq!(
+                    self.en_passant_square,
+                    mv.to(),
+                    "Square {} not marked as en-passant square",
+                    mv.to()
+                );
+                let captured_pawn = Piece::WhitePawn.with_color(self.opponent());
+                self.remove_piece(captured_pawn, mv.to() ^ 8); // Evil magic bit trick stolen from the Reckless engine.
+            }
+            MoveType::DoublePush => {
+                self.en_passant_square = Square::new((mv.from() as u8 + mv.to() as u8) / 2);
+            }
+            MoveType::Castling => {
+                let (rook_from, rook_to) = mv.get_rook_from_to_square_castling();
+                let rook = Piece::WhiteRook.with_color(self.current_color);
+
+                self.remove_piece(rook, rook_from);
+                self.add_piece(rook, rook_to);
+            }
+            _ => {}
+        }
+
+        self.update_castling_rights(mv);
+        self.current_color = self.opponent();
+    }
+
+    fn update_castling_rights(&mut self, mv: Move) {
+        // Rook or King get moved
+        match mv.from() {
+            Square::E1 => {
+                self.castling_rights.remove(CastlingRight::WhiteKingside);
+                self.castling_rights.remove(CastlingRight::WhiteQueenside);
+            }
+            Square::H1 => {
+                self.castling_rights.remove(CastlingRight::WhiteKingside);
+            }
+            Square::A1 => {
+                self.castling_rights.remove(CastlingRight::WhiteQueenside);
+            }
+            Square::E8 => {
+                self.castling_rights.remove(CastlingRight::BlackKingside);
+                self.castling_rights.remove(CastlingRight::BlackQueenside);
+            }
+            Square::H8 => {
+                self.castling_rights.remove(CastlingRight::BlackKingside);
+            }
+            Square::A8 => {
+                self.castling_rights.remove(CastlingRight::BlackQueenside);
+            }
+            _ => {}
+        };
+
+        // Rook gets captured
+        match mv.to() {
+            Square::H1 => {
+                self.castling_rights.remove(CastlingRight::WhiteKingside);
+            }
+            Square::A1 => {
+                self.castling_rights.remove(CastlingRight::WhiteQueenside);
+            }
+            Square::H8 => {
+                self.castling_rights.remove(CastlingRight::BlackKingside);
+            }
+            Square::A8 => {
+                self.castling_rights.remove(CastlingRight::BlackQueenside);
+            }
+            _ => {}
+        };
     }
 }
 

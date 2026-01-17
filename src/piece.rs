@@ -30,6 +30,13 @@ impl Piece {
         unsafe { std::mem::transmute(value) }
     }
 
+    pub fn with_color(self, color: Color) -> Self {
+        Self::new(match color {
+            Color::White => (self as u8) & 0b11111110,
+            Color::Black => (self as u8) | 1,
+        })
+    }
+
     pub fn get_color(&self) -> Color {
         // Color is encoded in the lsb (0 => White, 1 => Black)
         let color = *self as usize & 1;

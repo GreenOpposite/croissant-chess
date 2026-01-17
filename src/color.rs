@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use std::ops::{Index, IndexMut};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Default)]
@@ -24,6 +25,12 @@ impl Color {
             Color::White => 'w',
             Color::Black => 'b',
         }
+    }
+}
+
+impl Display for Color {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.char())
     }
 }
 

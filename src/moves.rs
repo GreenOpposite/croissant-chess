@@ -1,5 +1,6 @@
 use crate::piece::Piece;
 use crate::square::Square;
+use crate::square::Square::{A1, A8, C1, C8, D1, D8, F1, F8, G1, G8, H1, H8};
 use std::fmt::{Display, Formatter};
 
 /// # Memory Layout
@@ -37,6 +38,16 @@ impl Move {
 
     pub fn to(self) -> Square {
         Square::new(((self.0 & (0b111111 << 6)) >> 6) as u8)
+    }
+
+    pub fn get_rook_from_to_square_castling(&self) -> (Square, Square) {
+        match self.to() {
+            G1 => (H1, F1),
+            C1 => (A1, D1),
+            G8 => (H8, F8),
+            C8 => (A8, D8),
+            _ => (Square::None, Square::None),
+        }
     }
 
     pub fn ty(self) -> MoveType {

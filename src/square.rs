@@ -1,7 +1,7 @@
 use crate::bitboard::Bitboard;
 use crate::board::BOARD_SIZE;
 use std::fmt::{Display, Formatter};
-use std::ops::{Index, IndexMut};
+use std::ops::{BitXor, BitXorAssign, Index, IndexMut};
 
 /// Square representation with a1 = 0.
 ///
@@ -88,5 +88,19 @@ impl<T> Index<Square> for [T] {
 impl<T> IndexMut<Square> for [T] {
     fn index_mut(&mut self, square: Square) -> &mut Self::Output {
         self.get_mut(square as usize).unwrap()
+    }
+}
+
+impl BitXor<u8> for Square {
+    type Output = Square;
+
+    fn bitxor(self, rhs: u8) -> Self::Output {
+        Self::new(self as u8 ^ rhs)
+    }
+}
+
+impl BitXorAssign<u8> for Square {
+    fn bitxor_assign(&mut self, rhs: u8) {
+        *self = Self::new(*self as u8 ^ rhs);
     }
 }
