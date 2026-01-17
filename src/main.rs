@@ -4,6 +4,7 @@ mod bitboard;
 mod board;
 mod castling_rights;
 mod color;
+mod moves;
 mod piece;
 mod square;
 
